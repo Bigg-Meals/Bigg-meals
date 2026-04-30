@@ -21,8 +21,8 @@ const getItemQuantityAndLineItems = (orderData, publicData, currency) => {
   const deliveryMethod = orderData && orderData.deliveryMethod;
   const isShipping = deliveryMethod === 'shipping';
   const isPickup = deliveryMethod === 'pickup';
-  const { shippingPriceInSubunitsOneItem, shippingPriceInSubunitsAdditionalItems } =
-    publicData || {};
+  const { shippingPriceInSubunitsOneItem = 0, shippingPriceInSubunitsAdditionalItems = 0 } =
+    publicData?.deliveryInfoAdmin || {};
 
   // Calculate shipping fee if applicable
   const shippingFee = isShipping
@@ -136,7 +136,7 @@ const getDateRangeQuantityAndLineItems = (orderData, code) => {
  * @returns {Array} lineItems
  */
 exports.transactionLineItems = (listing, orderData, providerCommission, customerCommission) => {
-  const publicData = listing.attributes.publicData;
+  const { publicData, metadata = {} } = listing.attributes || {};
   // Note: the unitType needs to be one of the following:
   // day, night, hour, fixed, or item (these are related to payment processes)
   const { unitType, priceVariants, priceVariationsEnabled } = publicData;
@@ -177,7 +177,7 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   // E.g. by default, "shipping-fee" is tied to 'item' aka buying products.
   const quantityAndExtraLineItems =
     unitType === 'item'
-      ? getItemQuantityAndLineItems(orderData, publicData, currency)
+      ? getItemQuantityAndLineItems(orderData, { ...publicData, ...metadata }, currency)
       : unitType === 'fixed'
       ? getFixedQuantityAndLineItems(orderData)
       : unitType === 'hour'

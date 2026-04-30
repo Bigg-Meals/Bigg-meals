@@ -1451,5 +1451,9 @@
   "AdminZipCodesPage.noAccess": "You don't have access to this page.",
   "AdminZipCodesPage.fetchError": "Failed to load zip codes. Please refresh the page.",
   "AdminZipCodesPage.saveError": "Failed to save zip codes. Please try again.",
-  "AdminZipCodesPage.saveSuccess": "Zip codes saved successfully."
+  "AdminZipCodesPage.saveSuccess": "Zip codes saved successfully.",
+  "ProductOrderForm.zipcodeLabel": "ZIP code",
+  "ProductOrderForm.zipcodePlaceholder": "Enter your ZIP code",
+  "ProductOrderForm.zipcodeRequired": "ZIP code is required.",
+  "ProductOrderForm.zipcodeNotAvailable": "Delivery is not available to your ZIP code."
 }

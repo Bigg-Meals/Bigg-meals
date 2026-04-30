@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Form as FinalForm, FormSpy } from 'react-final-form';
 
 import { FormattedMessage, useIntl } from '../../../util/reactIntl';
@@ -111,6 +111,7 @@ const DeliveryMethodMaybe = props => {
 
 const renderForm = formRenderProps => {
   const [mounted, setMounted] = useState(false);
+  const prevLineItemValues = useRef({ quantity: undefined, deliveryMethod: undefined });
   const {
     // FormRenderProps from final-form
     handleSubmit,
@@ -134,6 +135,8 @@ const renderForm = formRenderProps => {
     payoutDetailsWarning,
     marketplaceName,
     values,
+    deliveryInfoAdmin,
+    invalid
   } = formRenderProps;
 
   // Note: don't add custom logic before useEffect
@@ -158,7 +161,9 @@ const renderForm = formRenderProps => {
   // If form values change, update line-items for the order breakdown
   const handleOnChange = formValues => {
     const { quantity, deliveryMethod } = formValues.values;
-    if (mounted) {
+    const prev = prevLineItemValues.current;
+    if (mounted && (quantity !== prev.quantity || deliveryMethod !== prev.deliveryMethod)) {
+      prevLineItemValues.current = { quantity, deliveryMethod };
       handleFetchLineItems({
         quantity,
         deliveryMethod,
@@ -184,6 +189,11 @@ const renderForm = formRenderProps => {
       // Blur event will show validator message
       formApi.blur('deliveryMethod');
       formApi.focus('deliveryMethod');
+    } else if (deliveryMethod === 'shipping' && !values.zipcode) {
+      e.preventDefault();
+      // Blur event will show validator message
+      formApi.blur('zipcode');
+      formApi.focus('zipcode');
     } else {
       handleSubmit(e);
     }
@@ -217,7 +227,7 @@ const renderForm = formRenderProps => {
   const quantities = hasStock ? [...Array(selectableStock).keys()].map(i => i + 1) : [];
 
   const submitInProgress = fetchLineItemsInProgress;
-  const submitDisabled = !hasStock;
+  const submitDisabled = !hasStock || invalid;
 
   return (
     <Form onSubmit={handleFormSubmit}>
@@ -258,6 +268,27 @@ const renderForm = formRenderProps => {
         formId={formId}
         intl={intl}
       />
+
+      {values?.deliveryMethod === 'shipping' ? (
+        <FieldTextInput
+          id={`${formId}.zipcode`}
+          className={css.zipcodeField}
+          name="zipcode"
+          type="text"
+          label={intl.formatMessage({ id: 'ProductOrderForm.zipcodeLabel' })}
+          placeholder={intl.formatMessage({ id: 'ProductOrderForm.zipcodePlaceholder' })}
+          validate={value => {
+            if (!value || value.trim() === '') {
+              return intl.formatMessage({ id: 'ProductOrderForm.zipcodeRequired' });
+            }
+            const zipcodes = deliveryInfoAdmin?.zipcodes || [];
+            if (!zipcodes.includes(value.trim())) {
+              return intl.formatMessage({ id: 'ProductOrderForm.zipcodeNotAvailable' });
+            }
+            return undefined;
+          }}
+        />
+      ) : null}
 
       {showBreakdown ? (
         <div className={css.breakdownWrapper}>

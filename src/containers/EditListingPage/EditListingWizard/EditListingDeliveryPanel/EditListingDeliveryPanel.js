@@ -37,8 +37,8 @@ const getInitialValues = props => {
   const location = publicData?.location || {};
   const { address, building } = location;
   const {
-    shippingEnabled,
-    pickupEnabled,
+    shippingEnabled = true,
+    pickupEnabled = true,
     shippingPriceInSubunitsOneItem,
     shippingPriceInSubunitsAdditionalItems,
   } = publicData;
@@ -51,15 +51,15 @@ const getInitialValues = props => {
     deliveryOptions.push('pickup');
   }
 
-  const currency = price?.currency || marketplaceCurrency;
-  const shippingOneItemAsMoney =
-    shippingPriceInSubunitsOneItem != null
-      ? new Money(shippingPriceInSubunitsOneItem, currency)
-      : null;
-  const shippingAdditionalItemsAsMoney =
-    shippingPriceInSubunitsAdditionalItems != null
-      ? new Money(shippingPriceInSubunitsAdditionalItems, currency)
-      : null;
+  // const currency = price?.currency || marketplaceCurrency;
+  // const shippingOneItemAsMoney =
+  //   shippingPriceInSubunitsOneItem != null
+  //     ? new Money(shippingPriceInSubunitsOneItem, currency)
+  //     : null;
+  // const shippingAdditionalItemsAsMoney =
+  //   shippingPriceInSubunitsAdditionalItems != null
+  //     ? new Money(shippingPriceInSubunitsAdditionalItems, currency)
+  //     : null;
 
   // Initial values for the form
   return {
@@ -71,8 +71,8 @@ const getInitialValues = props => {
         }
       : { search: undefined, selectedPlace: undefined },
     deliveryOptions,
-    shippingPriceInSubunitsOneItem: shippingOneItemAsMoney,
-    shippingPriceInSubunitsAdditionalItems: shippingAdditionalItemsAsMoney,
+    // shippingPriceInSubunitsOneItem: shippingOneItemAsMoney,
+    // shippingPriceInSubunitsAdditionalItems: shippingAdditionalItemsAsMoney,
   };
 };
 
@@ -170,16 +170,16 @@ const EditListingDeliveryPanel = props => {
             const pickupDataMaybe =
               pickupEnabled && address ? { location: { address, building } } : {};
 
-            const shippingDataMaybe =
-              shippingEnabled && shippingPriceInSubunitsOneItem != null
-                ? {
-                    // Note: we only save the "amount" because currency should not differ from listing's price.
-                    // Money is always dealt in subunits (e.g. cents) to avoid float calculations.
-                    shippingPriceInSubunitsOneItem: shippingPriceInSubunitsOneItem.amount,
-                    shippingPriceInSubunitsAdditionalItems:
-                      shippingPriceInSubunitsAdditionalItems?.amount,
-                  }
-                : {};
+            // const shippingDataMaybe =
+            //   shippingEnabled && shippingPriceInSubunitsOneItem != null
+            //     ? {
+            //         // Note: we only save the "amount" because currency should not differ from listing's price.
+            //         // Money is always dealt in subunits (e.g. cents) to avoid float calculations.
+            //         shippingPriceInSubunitsOneItem: shippingPriceInSubunitsOneItem.amount,
+            //         shippingPriceInSubunitsAdditionalItems:
+            //           shippingPriceInSubunitsAdditionalItems?.amount,
+            //       }
+            //     : {};
 
             // New values for listing attributes
             const updateValues = {
@@ -188,7 +188,7 @@ const EditListingDeliveryPanel = props => {
                 pickupEnabled,
                 ...pickupDataMaybe,
                 shippingEnabled,
-                ...shippingDataMaybe,
+                // ...shippingDataMaybe,
               },
             };
 

@@ -307,7 +307,8 @@ const OrderPanel = props => {
     showListingImage,
   } = props;
 
-  const publicData = listing?.attributes?.publicData || {};
+  const { publicData, metadata } = listing?.attributes || {};
+
   const { listingType, unitType, transactionProcessAlias = '', priceVariants, startTimeInterval } =
     publicData || {};
 
@@ -529,6 +530,7 @@ const OrderPanel = props => {
             shippingEnabled={shippingEnabled && displayShipping}
             displayDeliveryMethod={displayPickup || displayShipping}
             onContactUser={onContactUser}
+            deliveryInfoAdmin={metadata?.deliveryInfoAdmin}
             {...sharedProps}
           />
         ) : showInquiryForm ? (
