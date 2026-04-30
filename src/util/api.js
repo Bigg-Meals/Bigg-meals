@@ -160,18 +160,3 @@ export const createUserWithIdp = body => {
 export const deleteUserAccount = body => {
   return post('/api/delete-account', body);
 };
-
-// Fetch the list of allowed zip codes from the admin user's private data.
-export const fetchZipCodes = () => {
-  return get('/api/admin/zip-codes');
-};
-
-// Add a single zip code to the admin user's allowed list.
-export const addZipCode = body => {
-  return post('/api/admin/zip-codes/add', body);
-};
-
-// Remove a single zip code from the admin user's allowed list.
-export const removeZipCode = body => {
-  return post('/api/admin/zip-codes/remove', body);
-};

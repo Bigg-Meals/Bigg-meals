@@ -23,9 +23,6 @@ const { authenticateFacebook, authenticateFacebookCallback } = require('./api/au
 const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/google');
 
 const auth = require('./middleware/auth');
-const zipCodes = require('./api/zip-codes');
-const addZipCode = require('./api/add-zip-code');
-const removeZipCode = require('./api/remove-zip-code');
 
 const router = express.Router();
 
@@ -86,10 +83,5 @@ router.get('/auth/google', authenticateGoogle);
 // with Google. In this route a Passport.js custom callback is used for calling
 // loginWithIdp endpoint in Sharetribe Auth API to authenticate user to the marketplace
 router.get('/auth/google/callback', authenticateGoogleCallback);
-
-// Admin zip code management endpoints
-router.get('/admin/zip-codes', zipCodes);
-router.post('/admin/zip-codes/add', auth, addZipCode);
-router.post('/admin/zip-codes/remove', auth, removeZipCode);
 
 module.exports = router;

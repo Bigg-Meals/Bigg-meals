@@ -42,7 +42,6 @@ const NoAccessPage = loadable(() => import(/* webpackChunkName: "NoAccessPage" *
 
 // Styleguide helps you to review current components and develop new ones
 const StyleguidePage = loadable(() => import(/* webpackChunkName: "StyleguidePage" */ '../containers/StyleguidePage/StyleguidePage'));
-const AdminZipCodesPage = loadable(() => import(/* webpackChunkName: "AdminZipCodesPage" */ '../containers/AdminZipCodesPage/AdminZipCodesPage'));
 
 export const ACCOUNT_SETTINGS_PAGES = [
   'ContactDetailsPage',
@@ -370,14 +369,6 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'PrivacyPolicyPage',
       component: PrivacyPolicyPage,
       loadData: pageDataLoadingAPI.PrivacyPolicyPage.loadData,
-    },
-    {
-      path: '/admin',
-      name: 'AdminZipCodesPage',
-      auth: true,
-      authPage: 'LoginPage',
-      component: AdminZipCodesPage,
-      loadData: pageDataLoadingAPI.AdminZipCodesPage.loadData,
     },
     {
       path: '/styleguide',
