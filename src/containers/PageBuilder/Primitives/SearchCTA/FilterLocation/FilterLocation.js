@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Field } from 'react-final-form';
 import { useIntl } from '../../../../../util/reactIntl';
 import classNames from 'classnames';
@@ -15,6 +16,8 @@ const CustomIconLocation = () => {
 const LocationSearchField = props => {
   const [isCurrentLocation, setIsCurrentLocation] = useState(false);
   const { inputRootClass, intl, inputRef, onLocationChange, alignLeft } = props;
+  const allowedZipCodes = useSelector(state => state.AdminZipCodesPage.zipCodes);
+
   return (
     <Field
       name="location"
@@ -22,8 +25,19 @@ const LocationSearchField = props => {
       render={({ input, meta }) => {
         const { onChange, ...restInput } = input;
         const searchOnChange = value => {
-          onChange(value);
-          onLocationChange(value);
+          const filteredValue = value?.predictions
+            ? {
+                ...value,
+                predictions: value.predictions.filter(
+                  p =>
+                    Array.isArray(p.place_type) &&
+                    p.place_type.includes('postcode') &&
+                    allowedZipCodes.includes(p.text)
+                ),
+              }
+            : value;
+          onChange(filteredValue);
+          onLocationChange(filteredValue);
           if (value?.selectedPlace && value.selectedPlace.address == '') {
             setIsCurrentLocation(true);
           } else {

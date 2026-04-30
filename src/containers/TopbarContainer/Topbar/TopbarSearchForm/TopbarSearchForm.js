@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { Form as FinalForm, Field } from 'react-final-form';
 import classNames from 'classnames';
 
@@ -62,6 +63,8 @@ const SubmitButton = props => {
 
 const LocationSearchField = props => {
   const { desktopInputRootClass, intl, isMobile = false, inputRef, onLocationChange } = props;
+  const allowedZipCodes = useSelector(state => state.AdminZipCodesPage.zipCodes);
+
   return (
     <Field
       name="location"
@@ -74,8 +77,19 @@ const LocationSearchField = props => {
         // onChange prop but that breaks due to insufficient subscription handling.
         // See: https://github.com/final-form/react-final-form/issues/159
         const searchOnChange = value => {
-          onChange(value);
-          onLocationChange(value);
+          const filteredValue = value?.predictions
+            ? {
+                ...value,
+                predictions: value.predictions.filter(
+                  p =>
+                    Array.isArray(p.place_type) &&
+                    p.place_type.includes('postcode') &&
+                    allowedZipCodes.includes(p.text)
+                ),
+              }
+            : value;
+          onChange(filteredValue);
+          onLocationChange(filteredValue);
         };
 
         return (
