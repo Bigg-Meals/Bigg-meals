@@ -4,6 +4,7 @@
  * https://github.com/erikras/ducks-modular-redux
  */
 import CheckoutPage from './CheckoutPage/CheckoutPage.duck';
+import AdminZipCodesPage from './AdminZipCodesPage/AdminZipCodesPage.duck';
 import ContactDetailsPage from './ContactDetailsPage/ContactDetailsPage.duck';
 import EditListingPage from './EditListingPage/EditListingPage.duck';
 import InboxPage from './InboxPage/InboxPage.duck';
@@ -24,6 +25,7 @@ import TransactionPage from './TransactionPage/TransactionPage.duck';
 
 export {
   CheckoutPage,
+  AdminZipCodesPage,
   ContactDetailsPage,
   EditListingPage,
   InboxPage,

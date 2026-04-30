@@ -1432,5 +1432,24 @@
   "UserNav.accountSettings": "Account settings",
   "UserNav.profileSettings": "Profile settings",
   "UserNav.screenreader.userNav": "User profile navigation",
-  "UserNav.yourListings": "Your listings"
+  "UserNav.yourListings": "Your listings",
+
+  "AdminZipCodesPage.title": "Zip Codes",
+  "AdminZipCodesPage.heading": "Zip Codes",
+  "AdminZipCodesPage.inputPlaceholder": "e.g. 10001",
+  "AdminZipCodesPage.inputAriaLabel": "Zip code to add",
+  "AdminZipCodesPage.addButton": "Add",
+  "AdminZipCodesPage.saveButton": "Save Changes",
+  "AdminZipCodesPage.saving": "Saving…",
+  "AdminZipCodesPage.loading": "Loading zip codes…",
+  "AdminZipCodesPage.emptyState": "No zip codes added yet. Add a zip code above.",
+  "AdminZipCodesPage.tableColZipCode": "Zip Code",
+  "AdminZipCodesPage.tableColActions": "Actions",
+  "AdminZipCodesPage.removeButton": "Remove",
+  "AdminZipCodesPage.invalidZipCode": "Zip code must be exactly 5 digits.",
+  "AdminZipCodesPage.duplicateZipCode": "This zip code is already in the list.",
+  "AdminZipCodesPage.noAccess": "You don't have access to this page.",
+  "AdminZipCodesPage.fetchError": "Failed to load zip codes. Please refresh the page.",
+  "AdminZipCodesPage.saveError": "Failed to save zip codes. Please try again.",
+  "AdminZipCodesPage.saveSuccess": "Zip codes saved successfully."
 }

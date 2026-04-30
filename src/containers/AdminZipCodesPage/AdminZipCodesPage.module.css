@@ -1,0 +1,123 @@
+.root {
+  padding: 24px;
+}
+
+.spinnerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.heading {
+  text-align: center;
+  margin: 0 0 24px 0;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+  justify-content: center;
+}
+
+.addInput {
+  flex: 0 0 200px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: var(--borderRadiusMedium);
+  font-size: 16px;
+  color: var(--colorGrey700);
+}
+
+.addInput:focus {
+  outline: none;
+  border-color: var(--colorSuccess);
+}
+
+.addButton {
+  height: 42px;
+  min-width: 80px;
+}
+
+.inputError {
+  text-align: center;
+  color: var(--colorFail);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.errorMessage {
+  color: var(--colorFail);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.successMessage {
+  color: var(--colorSuccess);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.tableWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.table {
+  width: 100%;
+  max-width: 480px;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 10px 16px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--colorGrey100);
+  font-size: 14px;
+}
+
+.table th:last-child,
+.table td:last-child {
+  text-align: center;
+}
+
+.actionCell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.removeButton {
+  margin: 0;
+}
+
+.table th {
+  background-color: var(--colorGrey50);
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey700);
+}
+
+.table tr:hover td {
+  background-color: var(--colorGrey50);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--colorGrey500);
+}
+
+@media (--viewportMedium) {
+  .root {
+    padding: 48px;
+  }
+
+  .controls {
+    gap: 16px;
+  }
+}

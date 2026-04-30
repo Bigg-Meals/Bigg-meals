@@ -100,6 +100,15 @@ const post = (path, body, options = {}) => {
   return request(path, requestOptions);
 };
 
+const get = (path, options = {}) => {
+  const requestOptions = {
+    ...options,
+    method: methods.GET,
+  };
+
+  return request(path, requestOptions);
+};
+
 // Fetch transaction line items from the local API endpoint.
 //
 // See `server/api/transaction-line-items.js` to see what data should
@@ -150,4 +159,19 @@ export const createUserWithIdp = body => {
 // the marketplace.
 export const deleteUserAccount = body => {
   return post('/api/delete-account', body);
+};
+
+// Fetch the list of allowed zip codes from the admin user's private data.
+export const fetchZipCodes = () => {
+  return get('/api/admin/zip-codes');
+};
+
+// Add a single zip code to the admin user's allowed list.
+export const addZipCode = body => {
+  return post('/api/admin/zip-codes/add', body);
+};
+
+// Remove a single zip code from the admin user's allowed list.
+export const removeZipCode = body => {
+  return post('/api/admin/zip-codes/remove', body);
 };

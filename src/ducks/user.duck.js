@@ -12,6 +12,7 @@ import {
 
 import { authInfo } from './auth.duck';
 import { updateStripeConnectAccount } from './stripeConnectAccount.duck';
+import { loadZipCodes } from '../containers/AdminZipCodesPage/AdminZipCodesPage.duck';
 
 // ================ Helper Functions ================ //
 
@@ -154,7 +155,7 @@ export const fetchCurrentUserNotifications = () => (dispatch, getState, sdk) => 
   return dispatch(fetchCurrentUserNotificationsThunk()).unwrap();
 };
 
-const fetchCurrentUserPayloadCreator = (options, thunkAPI) => {
+const fetchCurrentUserPayloadCreator = async (options, thunkAPI) => {
   const { getState, dispatch, extra: sdk, rejectWithValue } = thunkAPI;
   const state = getState();
   const { currentUserHasListings, currentUserShowTimestamp } = state.user || {};
@@ -166,6 +167,8 @@ const fetchCurrentUserPayloadCreator = (options, thunkAPI) => {
     afterLogin,
     enforce = false, // Automatic emailVerification might be called too fast
   } = options || {};
+
+  dispatch(loadZipCodes());
 
   // Double fetch might happen when e.g. profile page is making a full page load
   const aSecondAgo = new Date().getTime() - 1000;
