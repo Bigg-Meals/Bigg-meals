@@ -42,3 +42,45 @@
     margin-top: 100px;
   }
 }
+
+.addOnsWrapper {
+  margin-bottom: 24px;
+
+  @media (--viewportMedium) {
+    margin-bottom: 32px;
+  }
+}
+
+.addOnsHeading {
+  font-weight: var(--fontWeightSemiBold);
+  margin: 0 0 12px 0;
+}
+
+.addOnRow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 12px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: 4px;
+
+  @media (--viewportMedium) {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 0;
+    border: none;
+    margin-bottom: 16px;
+  }
+}
+
+.addOnField {
+  flex: 1;
+}
+
+.addOnRemoveButton {
+  color: var(--colorFail);
+  white-space: nowrap;
+  padding-bottom: 8px;
+}

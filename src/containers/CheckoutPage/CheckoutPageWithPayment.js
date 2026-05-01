@@ -119,6 +119,7 @@ const getOrderParams = (
   const deliveryMethod = pageData.orderData?.deliveryMethod;
   const deliveryMethodMaybe = deliveryMethod ? { deliveryMethod } : {};
   const { listingType, unitType, priceVariants } = pageData?.listing?.attributes?.publicData || {};
+  const addOns = pageData.orderData?.addOns || [];
 
   // price variant data for fixed duration bookings
   const priceVariantName = pageData.orderData?.priceVariantName;
@@ -157,6 +158,7 @@ const getOrderParams = (
     ...priceVariantNameMaybe,
     ...protectedDataMaybe,
     ...optionalPaymentParams,
+    addOns,
   };
   return orderParams;
 };

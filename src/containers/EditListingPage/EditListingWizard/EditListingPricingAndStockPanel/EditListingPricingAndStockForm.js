@@ -1,5 +1,6 @@
 import React from 'react';
 import { Field, Form as FinalForm } from 'react-final-form';
+import { FieldArray } from 'react-final-form-arrays';
 import arrayMutators from 'final-form-arrays';
 import classNames from 'classnames';
 
@@ -19,6 +20,7 @@ import {
   FieldCurrencyInput,
   FieldCheckboxGroup,
   FieldTextInput,
+  InlineTextButton,
 } from '../../../../components';
 
 // Import modules from this directory
@@ -91,6 +93,56 @@ const UpdateStockToInfinityCheckboxMaybe = ({ hasInfiniteStock, currentStock, fo
   ) : null;
 };
 
+const AddOns = ({ formId, marketplaceCurrency, intl }) => (
+  <FieldArray name="addOns">
+    {({ fields }) => (
+      <div className={css.addOnsWrapper}>
+        <p className={css.addOnsHeading}>
+          {intl.formatMessage({ id: 'EditListingPricingAndStockForm.addOnsTitle' })}
+        </p>
+        {fields.map((name, index) => (
+          <div key={name} className={css.addOnRow}>
+            <FieldTextInput
+              id={`${formId}.addOns.${index}.name`}
+              name={`${name}.name`}
+              type="text"
+              className={css.addOnField}
+              label={intl.formatMessage({
+                id: 'EditListingPricingAndStockForm.addOnNameLabel',
+              })}
+              placeholder={intl.formatMessage({
+                id: 'EditListingPricingAndStockForm.addOnNamePlaceholder',
+              })}
+            />
+            <FieldCurrencyInput
+              id={`${formId}.addOns.${index}.price`}
+              name={`${name}.price`}
+              className={css.addOnField}
+              label={intl.formatMessage({
+                id: 'EditListingPricingAndStockForm.addOnPriceLabel',
+              })}
+              placeholder={intl.formatMessage({
+                id: 'EditListingPricingAndStockForm.addOnPricePlaceholder',
+              })}
+              currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
+            />
+            <InlineTextButton
+              className={css.addOnRemoveButton}
+              type="button"
+              onClick={() => fields.remove(index)}
+            >
+              {intl.formatMessage({ id: 'EditListingPricingAndStockForm.addOnRemove' })}
+            </InlineTextButton>
+          </div>
+        ))}
+        <InlineTextButton type="button" onClick={() => fields.push({})}>
+          {intl.formatMessage({ id: 'EditListingPricingAndStockForm.addOnAdd' })}
+        </InlineTextButton>
+      </div>
+    )}
+  </FieldArray>
+);
+
 /**
  * The EditListingPricingAndStockForm component.
  *
@@ -161,7 +213,10 @@ export const EditListingPricingAndStockForm = props => (
       const classes = classNames(rootClassName || css.root, className);
       const submitReady = (updated && pristine) || ready;
       const submitInProgress = updateInProgress;
-      const submitDisabled = invalid || disabled || submitInProgress;
+      const hasIncompleteAddOn = (values.addOns || []).some(
+        addon => !addon?.name?.trim() || !addon?.price
+      );
+      const submitDisabled = invalid || disabled || submitInProgress || hasIncompleteAddOn;
       const { updateListingError, showListingsError, setStockError } = fetchErrors || {};
 
       const stockErrorMessage = isOldTotalMismatchStockError(setStockError)
@@ -234,6 +289,8 @@ export const EditListingPricingAndStockForm = props => (
             </Field>
           )}
           {setStockError ? <p className={css.error}>{stockErrorMessage}</p> : null}
+
+          <AddOns formId={formId} marketplaceCurrency={marketplaceCurrency} intl={intl} />
 
           <Button
             className={css.submitButton}

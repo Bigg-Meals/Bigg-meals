@@ -1455,5 +1455,14 @@
   "ProductOrderForm.zipcodeLabel": "ZIP code",
   "ProductOrderForm.zipcodePlaceholder": "Enter your ZIP code",
   "ProductOrderForm.zipcodeRequired": "ZIP code is required.",
-  "ProductOrderForm.zipcodeNotAvailable": "Delivery is not available to your ZIP code."
+  "ProductOrderForm.zipcodeNotAvailable": "Delivery is not available to your ZIP code.",
+  "EditListingPricingAndStockForm.addOnsTitle": "Add-ons (optional)",
+  "EditListingPricingAndStockForm.addOnNameLabel": "Name",
+  "EditListingPricingAndStockForm.addOnNamePlaceholder": "e.g. Extra cheese",
+  "EditListingPricingAndStockForm.addOnPriceLabel": "Price",
+  "EditListingPricingAndStockForm.addOnPricePlaceholder": "Add a price…",
+  "EditListingPricingAndStockForm.addOnRemove": "Remove",
+  "EditListingPricingAndStockForm.addOnAdd": "+ Add add-on",
+  "ProductOrderForm.addOnsLabel": "Add-ons",
+  "TransactionPanel.addOnsHeading": "Add-ons"
 }

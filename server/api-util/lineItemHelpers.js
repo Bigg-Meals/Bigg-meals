@@ -343,7 +343,7 @@ exports.hasMinimumCommission = commission => {
  * @param {Object} priceAttribute object containing listing price information
  * @returns {Array} provider commission line item
  */
-exports.getProviderCommissionMaybe = (providerCommission, order, currency) => {
+exports.getProviderCommissionMaybe = (providerCommission, order, currency, addOnsLineItems) => {
   // Check if either minimum commission or percentage are defined in the commission object
   const hasMinimumCommission = exports.hasMinimumCommission(providerCommission);
   const hasCommissionPercentage = exports.hasCommissionPercentage(providerCommission);
@@ -353,7 +353,7 @@ exports.getProviderCommissionMaybe = (providerCommission, order, currency) => {
   }
 
   // Calculate the total money paid into the transaction
-  const totalMoneyIn = exports.calculateTotalFromLineItems([order]);
+  const totalMoneyIn = exports.calculateTotalFromLineItems([order, ...addOnsLineItems]);
   // Calculate the estimated commission with percentage applied, if applicable
   const estimatedCommissionFromPercentage = calculateCommissionWithPercentage(
     providerCommission?.percentage,

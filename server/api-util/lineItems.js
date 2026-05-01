@@ -42,7 +42,7 @@ const getItemQuantityAndLineItems = (orderData, publicData, currency) => {
           code: 'line-item/shipping-fee',
           unitPrice: shippingFee,
           quantity: 1,
-          includeFor: ['customer', 'provider'],
+          includeFor: ['customer'],
         },
       ]
     : [];
@@ -146,7 +146,7 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   const priceAttribute = listing.attributes.price;
   const currency = priceAttribute?.currency || orderData.currency;
 
-  const { priceVariantName, offer } = orderData || {};
+  const { priceVariantName, offer, addOns = [] } = orderData || {};
   const priceVariantConfig = priceVariants
     ? priceVariants.find(pv => pv.name === priceVariantName)
     : null;
@@ -227,12 +227,36 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
     includeFor: ['customer', 'provider'],
   };
 
+  const addOnsLineItems = [];
+  if (addOns.length > 0) {
+    const publicDataAddOns = publicData?.addOns || [];
+    const selectedAddOns = addOns
+      .map(key => publicDataAddOns.find(a => a.key === key))
+      .filter(Boolean);
+
+    if (selectedAddOns.length > 0) {
+      const totalAddOnSubunits = selectedAddOns.reduce(
+        (sum, addon) => sum + addon.priceInSubunits,
+        0
+      );
+      const addOnNames = selectedAddOns.map(a => a.name).join(', ');
+      const addOnLineItem = {
+        code: 'line-item/add-ons',
+        unitPrice: new Money(totalAddOnSubunits, currency),
+        quantity: 1,
+        includeFor: ['customer', 'provider'],
+      };
+      addOnsLineItems.push(addOnLineItem);
+    }
+  }
+
   // Let's keep the base price (order) as first line item and provider and customer commissions as last.
   // Note: the order matters only if OrderBreakdown component doesn't recognize line-item.
   const lineItems = [
     order,
     ...extraLineItems,
-    ...getProviderCommissionMaybe(providerCommission, order, currency),
+    ...addOnsLineItems,
+    ...getProviderCommissionMaybe(providerCommission, order, currency, addOnsLineItems),
     ...getCustomerCommissionMaybe(customerCommission, order, currency),
   ];
 

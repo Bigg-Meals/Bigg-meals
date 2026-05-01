@@ -46,7 +46,14 @@ const getInitialValues = props => {
       : 1;
   const stockTypeInfinity = [];
 
-  return { price, stock, stockTypeInfinity };
+  const currency = price?.currency;
+  const rawAddOns = publicData?.addOns || [];
+  const addOns = rawAddOns.map(({ name, priceInSubunits }) => ({
+    name,
+    price: currency && priceInSubunits != null ? new Money(priceInSubunits, currency) : undefined,
+  }));
+
+  return { price, stock, stockTypeInfinity, addOns };
 };
 
 /**
@@ -145,7 +152,7 @@ const EditListingPricingAndStockPanel = props => {
           className={css.form}
           initialValues={initialValues}
           onSubmit={values => {
-            const { price, stock, stockTypeInfinity } = values;
+            const { price, stock, stockTypeInfinity, addOns } = values;
 
             // Update stock only if the value has changed, or stock is infinity in stockType,
             // but not current stock is a small number (might happen with old listings)
@@ -175,8 +182,24 @@ const EditListingPricingAndStockPanel = props => {
                 : {};
 
             // New values for listing attributes
+            const slugify = str =>
+              str
+                ?.toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '') || '';
+
+            const addOnsData = (addOns || [])
+              .filter(a => a?.name && a?.price)
+              .map(({ name, price: addonPrice }) => ({
+                key: slugify(name.trim()),
+                name: name.trim(),
+                priceInSubunits: addonPrice.amount,
+              }));
+
             const updateValues = {
               price,
+              publicData: { addOns: addOnsData },
               ...stockUpdateMaybe,
             };
             // Save the initialValues to state
@@ -186,6 +209,7 @@ const EditListingPricingAndStockPanel = props => {
                 price,
                 stock: stockUpdateMaybe?.stockUpdate?.newTotal || stock,
                 stockTypeInfinity,
+                addOns,
               },
             });
             onSubmit(updateValues);

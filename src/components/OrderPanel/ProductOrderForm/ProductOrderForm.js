@@ -1,13 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Form as FinalForm, FormSpy } from 'react-final-form';
+import arrayMutators from 'final-form-arrays';
 
 import { FormattedMessage, useIntl } from '../../../util/reactIntl';
 import { propTypes } from '../../../util/types';
 import { numberAtLeast, required } from '../../../util/validators';
+import { formatMoney } from '../../../util/currency';
+import { types as sdkTypes } from '../../../util/sdkLoader';
 import { PURCHASE_PROCESS_NAME } from '../../../transactions/transaction';
 
 import {
   Form,
+  FieldCheckboxGroup,
   FieldSelect,
   FieldTextInput,
   InlineTextButton,
@@ -15,6 +19,8 @@ import {
   H3,
   H6,
 } from '../../../components';
+
+const { Money } = sdkTypes;
 
 import EstimatedCustomerBreakdownMaybe from '../EstimatedCustomerBreakdownMaybe';
 
@@ -35,6 +41,7 @@ const handleFetchLineItems = ({
   isOwnListing,
   fetchLineItemsInProgress,
   onFetchTransactionLineItems,
+  addOns,
 }) => {
   const stockReservationQuantity = Number.parseInt(quantity, 10);
   const deliveryMethodMaybe = deliveryMethod ? { deliveryMethod } : {};
@@ -46,11 +53,32 @@ const handleFetchLineItems = ({
     !fetchLineItemsInProgress
   ) {
     onFetchTransactionLineItems({
-      orderData: { stockReservationQuantity, ...deliveryMethodMaybe },
+      orderData: { stockReservationQuantity, ...deliveryMethodMaybe, addOns },
       listingId,
       isOwnListing,
     });
   }
+};
+
+const AddOnsMaybe = ({ addOns, hasStock, formId, intl, price }) => {
+  if (!hasStock || !addOns || addOns.length === 0) return null;
+  const currency = price?.currency;
+  const options = addOns
+    .filter(a => a?.key && a?.name && a?.priceInSubunits != null && currency)
+    .map(addon => ({
+      key: addon.key,
+      label: `${addon.name}: ${formatMoney(intl, new Money(addon.priceInSubunits, currency))}`,
+    }));
+  if (options.length === 0) return null;
+  return (
+    <FieldCheckboxGroup
+      id={`${formId}.addOns`}
+      name="addOns"
+      className={css.addOnsField}
+      label={intl.formatMessage({ id: 'ProductOrderForm.addOnsLabel' })}
+      options={options}
+    />
+  );
 };
 
 const DeliveryMethodMaybe = props => {
@@ -136,7 +164,8 @@ const renderForm = formRenderProps => {
     marketplaceName,
     values,
     deliveryInfoAdmin,
-    invalid
+    invalid,
+    addOns,
   } = formRenderProps;
 
   // Note: don't add custom logic before useEffect
@@ -160,10 +189,15 @@ const renderForm = formRenderProps => {
 
   // If form values change, update line-items for the order breakdown
   const handleOnChange = formValues => {
-    const { quantity, deliveryMethod } = formValues.values;
+    const { quantity, deliveryMethod, addOns = [] } = formValues.values;
     const prev = prevLineItemValues.current;
-    if (mounted && (quantity !== prev.quantity || deliveryMethod !== prev.deliveryMethod)) {
-      prevLineItemValues.current = { quantity, deliveryMethod };
+    if (
+      mounted &&
+      (quantity !== prev.quantity ||
+        deliveryMethod !== prev.deliveryMethod ||
+        addOns !== prev.addOns)
+    ) {
+      prevLineItemValues.current = { quantity, deliveryMethod, addOns };
       handleFetchLineItems({
         quantity,
         deliveryMethod,
@@ -171,6 +205,7 @@ const renderForm = formRenderProps => {
         isOwnListing,
         fetchLineItemsInProgress,
         onFetchTransactionLineItems,
+        addOns,
       });
     }
   };
@@ -259,6 +294,8 @@ const renderForm = formRenderProps => {
           ))}
         </FieldSelect>
       )}
+
+      <AddOnsMaybe addOns={addOns} hasStock={hasStock} formId={formId} intl={intl} price={price} />
 
       <DeliveryMethodMaybe
         displayDeliveryMethod={displayDeliveryMethod}
@@ -394,6 +431,7 @@ const ProductOrderForm = props => {
   return (
     <FinalForm
       initialValues={initialValues}
+      mutators={{ ...arrayMutators }}
       hasMultipleDeliveryMethods={hasMultipleDeliveryMethods}
       displayDeliveryMethod={displayDeliveryMethod}
       {...props}

@@ -309,8 +309,14 @@ const OrderPanel = props => {
 
   const { publicData, metadata } = listing?.attributes || {};
 
-  const { listingType, unitType, transactionProcessAlias = '', priceVariants, startTimeInterval } =
-    publicData || {};
+  const {
+    listingType,
+    unitType,
+    transactionProcessAlias = '',
+    priceVariants,
+    startTimeInterval,
+    addOns = [],
+  } = publicData || {};
 
   const processName = resolveLatestProcessName(transactionProcessAlias.split('/')[0]);
   const lineItemUnitType = lineItemUnitTypeMaybe || `line-item/${unitType}`;
@@ -531,6 +537,7 @@ const OrderPanel = props => {
             displayDeliveryMethod={displayPickup || displayShipping}
             onContactUser={onContactUser}
             deliveryInfoAdmin={metadata?.deliveryInfoAdmin}
+            addOns={addOns}
             {...sharedProps}
           />
         ) : showInquiryForm ? (
