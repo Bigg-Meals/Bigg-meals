@@ -26,6 +26,7 @@ import {
 } from '../../../components';
 
 import ShippingDetails from '../ShippingDetails/ShippingDetails';
+import DeliveryDateTimeSelector from './DeliveryDateTimeSelector';
 
 import css from './StripePaymentForm.module.css';
 
@@ -481,6 +482,9 @@ class StripePaymentForm extends Component {
       isFuzzyLocation,
       transactionFieldConfigs = [],
       showTransactionFields,
+      storeTimings,
+      deliveryMethod,
+      preparationHours,
       values,
     } = formRenderProps;
 
@@ -586,6 +590,16 @@ class StripePaymentForm extends Component {
           formApi={formApi}
           locale={locale}
           intl={intl}
+        />
+
+        <DeliveryDateTimeSelector
+          storeTimings={storeTimings}
+          deliveryMethod={deliveryMethod}
+          preparationHours={preparationHours}
+          values={values}
+          formApi={formApi}
+          intl={intl}
+          formId={formId}
         />
 
         {billingDetailsNeeded && !loadingData ? (

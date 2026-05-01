@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import moment from 'moment';
 
 // Import contexts and util modules
 import { FormattedMessage, intlShape } from '../../util/reactIntl';
@@ -270,8 +271,23 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
   const { card, message, paymentMethod: selectedPaymentMethod, formValues } = values;
   const { saveAfterOnetimePayment: saveAfterOnetimePaymentRaw } = formValues;
 
+  const deliveryDateRaw = formValues.deliveryDate?.date;
+  const deliveryDateStr = deliveryDateRaw instanceof Date
+    ? moment(deliveryDateRaw).format('YYYY-MM-DD')
+    : null;
+
+  const deliveryDateTimeMaybe =
+    deliveryDateStr && formValues.deliveryTimeFrom && formValues.deliveryTimeTo
+      ? {
+          deliveryDate: deliveryDateStr,
+          deliveryTimeFrom: formValues.deliveryTimeFrom,
+          deliveryTimeTo: formValues.deliveryTimeTo,
+        }
+      : {};
+
   const transactionFieldsProtectedData = {
     ...pickTransactionFieldsData(formValues, 'protected', true, transactionFieldConfigs),
+    ...deliveryDateTimeMaybe,
   };
 
   const saveAfterOnetimePayment =
@@ -549,6 +565,8 @@ export const CheckoutPageWithPayment = props => {
   const listingLocation = listing?.attributes?.publicData?.location;
   const showPickUpLocation = isPurchase && orderData?.deliveryMethod === 'pickup';
   const showLocation = (isBooking || isNegotiation) && listingLocation?.address;
+  const storeTimings = listing?.author?.attributes?.profile?.publicData?.storeTimings;
+  const preparationHours = listing?.attributes?.publicData?.preparationHours || 0;
 
   const providerDisplayName = isNegotiation
     ? existingTransaction?.provider?.attributes?.profile?.displayName
@@ -645,6 +663,9 @@ export const CheckoutPageWithPayment = props => {
                 showPickUpLocation={showPickUpLocation}
                 showLocation={showLocation}
                 listingLocation={listingLocation}
+                storeTimings={storeTimings}
+                deliveryMethod={orderData?.deliveryMethod}
+                preparationHours={preparationHours}
                 totalPrice={totalPrice}
                 locale={config.localization.locale}
                 stripePublishableKey={config.stripe.publishableKey}

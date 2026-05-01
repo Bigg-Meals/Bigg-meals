@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
+import moment from 'moment';
 
 import { FormattedMessage, injectIntl, intlShape } from '../../../util/reactIntl';
 import { propTypes } from '../../../util/types';
@@ -28,6 +29,31 @@ import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
 
 import css from './TransactionPanel.module.css';
+
+const DeliveryDateTimeMaybe = ({ protectedData, intl }) => {
+  const { deliveryDate, deliveryTimeFrom, deliveryTimeTo, deliveryMethod } = protectedData || {};
+  if (!deliveryDate || !deliveryTimeFrom || !deliveryTimeTo) return null;
+
+  const isPickup = deliveryMethod === 'pickup';
+  const headingId = isPickup
+    ? 'TransactionPanel.pickupDateTimeHeading'
+    : 'TransactionPanel.deliveryDateTimeHeading';
+
+  const formattedDate = moment(deliveryDate, 'YYYY-MM-DD').format('ddd, MMM D, YYYY');
+  const formattedFrom = moment(deliveryTimeFrom, 'HH:mm').format('h:mm A');
+  const formattedTo = moment(deliveryTimeTo, 'HH:mm').format('h:mm A');
+
+  return (
+    <div className={css.deliveryInfoContainer}>
+      <Heading as="h3" rootClassName={css.sectionHeading}>
+        <FormattedMessage id={headingId} />
+      </Heading>
+      <p className={css.deliveryInfoDetails}>
+        {formattedDate} &middot; {formattedFrom} – {formattedTo}
+      </p>
+    </div>
+  );
+};
 
 const AddOnsMaybe = ({ protectedData, listing, intl }) => {
   const selectedKeys = protectedData?.addOns;
@@ -321,6 +347,7 @@ export class TransactionPanelComponent extends Component {
             {offer}
             {transactionFieldsComponent}
 
+            <DeliveryDateTimeMaybe protectedData={protectedData} intl={intl} />
             <AddOnsMaybe protectedData={protectedData} listing={listing} intl={intl} />
 
             {!isInquiryProcess ? (

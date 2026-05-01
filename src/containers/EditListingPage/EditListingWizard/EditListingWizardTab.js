@@ -113,6 +113,8 @@ const EditListingWizardTab = props => {
     routeConfiguration,
     titleId,
     intl,
+    currentUser,
+    onUpdateProfile,
   } = props;
 
   const { type } = params;
@@ -185,6 +187,8 @@ const EditListingWizardTab = props => {
         return onCompleteEditListingWizardTab(tab, values);
       },
       intl,
+      currentUser,
+      onUpdateProfile,
       updatePageTitle: ({ panelHeading }) => (
         <Helmet>
           <title>{intl.formatMessage({ id: titleId }, { panelHeading })}</title>

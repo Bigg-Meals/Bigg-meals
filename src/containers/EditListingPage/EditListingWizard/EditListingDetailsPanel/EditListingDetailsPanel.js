@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 
 // Import util modules
@@ -23,6 +23,7 @@ import { H3, ListingLink } from '../../../../components';
 // Import modules from this directory
 import ErrorMessage from './ErrorMessage';
 import EditListingDetailsForm from './EditListingDetailsForm';
+import StoreScheduleModal from '../../../../containers/ProfileSettingsPage/ProfileSettingsForm/StoreScheduleModal';
 import css from './EditListingDetailsPanel.module.css';
 
 /**
@@ -309,7 +310,25 @@ const EditListingDetailsPanel = props => {
     config,
     updatePageTitle: UpdatePageTitle,
     intl,
+    onManageDisableScrolling,
+    currentUser,
+    onUpdateProfile,
   } = props;
+
+  const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+
+  const storeTimings = currentUser?.attributes?.profile?.publicData?.storeTimings;
+  const hasSchedule = storeTimings && Object.keys(storeTimings).length > 0;
+
+  const handleFormSubmit = updateValues => {
+    if (!hasSchedule) {
+      setPendingSubmitValues(updateValues);
+      setScheduleModalOpen(true);
+    } else {
+      onSubmit(updateValues);
+    }
+  };
 
   const classes = classNames(rootClassName || css.root, className);
   const { publicData, state } = listing?.attributes || {};
@@ -369,6 +388,7 @@ const EditListingDetailsPanel = props => {
       };
 
   return (
+    <>
     <main className={classes}>
       <UpdatePageTitle
         panelHeading={intl.formatMessage(
@@ -430,7 +450,7 @@ const EditListingDetailsPanel = props => {
               ...setNoAvailabilityForUnbookableListings(transactionProcessAlias),
             };
 
-            onSubmit(updateValues);
+            handleFormSubmit(updateValues);
           }}
           selectableListingTypes={listingTypes.map(conf =>
             getTransactionInfo({
@@ -465,6 +485,25 @@ const EditListingDetailsPanel = props => {
         />
       )}
     </main>
+    {onManageDisableScrolling ? (
+      <StoreScheduleModal
+        isOpen={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        onManageDisableScrolling={onManageDisableScrolling}
+        onSave={({ storeTimings: newTimings }) => {
+          if (onUpdateProfile) {
+            onUpdateProfile({ publicData: { storeTimings: newTimings } });
+          }
+          setScheduleModalOpen(false);
+          if (pendingSubmitValues) {
+            onSubmit(pendingSubmitValues);
+            setPendingSubmitValues(null);
+          }
+        }}
+        storeTimings={storeTimings}
+      />
+    ) : null}
+    </>
   );
 };
 

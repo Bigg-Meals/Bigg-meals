@@ -489,6 +489,7 @@ class EditListingWizard extends Component {
       payoutDetailsSaveInProgress,
       payoutDetailsSaved,
       onManageDisableScrolling,
+      onUpdateProfile,
       onPayoutDetailsChange,
       onGetStripeConnectAccountLink,
       getAccountLinkInProgress,
@@ -693,9 +694,11 @@ class EditListingWizard extends Component {
                 fetchInProgress={fetchInProgress}
                 onListingTypeChange={selectedListingType => this.setState({ selectedListingType })}
                 onManageDisableScrolling={onManageDisableScrolling}
+                onUpdateProfile={onUpdateProfile}
                 config={config}
                 routeConfiguration={routeConfiguration}
                 intl={intl}
+                currentUser={currentUser}
               />
             );
           })}

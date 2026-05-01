@@ -13,7 +13,7 @@ import {
   pickUserFieldsData,
   showCreateListingLinkForUser,
 } from '../../util/userHelpers';
-import { isScrollingDisabled } from '../../ducks/ui.duck';
+import { isScrollingDisabled, manageDisableScrolling } from '../../ducks/ui.duck';
 
 import { H3, Page, UserNav, NamedLink, LayoutSingleColumn } from '../../components';
 
@@ -77,12 +77,17 @@ export const ProfileSettingsPageComponent = props => {
     image,
     onImageUpload,
     onUpdateProfile,
+    onManageDisableScrolling,
     scrollingDisabled,
     updateInProgress,
     updateProfileError,
     uploadImageError,
     uploadInProgress,
   } = props;
+
+  const handleSaveSchedule = ({ storeTimings }) => {
+    onUpdateProfile({ publicData: { storeTimings } });
+  };
 
   const { userFields, userTypes = [] } = config.user;
   const publicUserFields = userFields.filter(uf => uf.scope === 'public');
@@ -122,7 +127,7 @@ export const ProfileSettingsPageComponent = props => {
   // I.e. the status is active, not pending-approval or banned
   const isUnauthorizedUser = currentUser && !isUserAuthorized(currentUser);
 
-  const { userType } = publicData || {};
+  const { userType, storeTimings } = publicData || {};
   const profileImageId = user.profileImage ? user.profileImage.id : null;
   const profileImage = image || { imageId: profileImageId };
   const userTypeConfig = userTypes.find(config => config.userType === userType);
@@ -152,6 +157,9 @@ export const ProfileSettingsPageComponent = props => {
       marketplaceName={config.marketplaceName}
       userFields={publicUserFields}
       userTypeConfig={userTypeConfig}
+      storeTimings={storeTimings}
+      onManageDisableScrolling={onManageDisableScrolling}
+      onSaveSchedule={handleSaveSchedule}
     />
   ) : null;
 
@@ -211,6 +219,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => ({
   onImageUpload: data => dispatch(uploadImage(data)),
   onUpdateProfile: data => dispatch(updateProfile(data)),
+  onManageDisableScrolling: (componentId, disableScrolling) =>
+    dispatch(manageDisableScrolling(componentId, disableScrolling)),
 });
 
 const ProfileSettingsPage = compose(
