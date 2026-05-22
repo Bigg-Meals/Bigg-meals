@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -72,6 +72,7 @@ const EnhancedCheckoutPage = props => {
   const routeConfiguration = useRouteConfiguration();
   const intl = useIntl();
   const history = useHistory();
+  const hasFormBeenShown = useRef(false);
 
   useEffect(() => {
     const {
@@ -174,6 +175,10 @@ const EnhancedCheckoutPage = props => {
       )
     : 'Checkout page is loading data';
 
+  if (!speculateTransactionInProgress) {
+    hasFormBeenShown.current = true;
+  }
+
   return processName && isInquiryProcess ? (
     <CheckoutPageWithInquiryProcess
       config={config}
@@ -190,7 +195,7 @@ const EnhancedCheckoutPage = props => {
       transactionFieldConfigs={transactionFieldConfigs}
       {...props}
     />
-  ) : processName && !isInquiryProcess && !speculateTransactionInProgress ? (
+  ) : processName && !isInquiryProcess && (!speculateTransactionInProgress || hasFormBeenShown.current) ? (
     <CheckoutPageWithPayment
       config={config}
       routeConfiguration={routeConfiguration}

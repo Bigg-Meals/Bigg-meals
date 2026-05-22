@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 
 // Import contexts and util modules
@@ -111,7 +111,8 @@ const getOrderParams = (
   optionalPaymentParams,
   config,
   transactionFieldProtectedData,
-  customerDefaultMessage
+  customerDefaultMessage,
+  tipInSubunits
 ) => {
   const quantity = pageData.orderData?.quantity;
   const quantityMaybe = quantity ? { quantity } : {};
@@ -150,6 +151,8 @@ const getOrderParams = (
 
   // These are the order parameters for the first payment-related transition
   // which is either initiate-transition or initiate-transition-after-enquiry
+  const tipMaybe = tipInSubunits ? { tip: tipInSubunits } : {};
+
   const orderParams = {
     listingId: pageData?.listing?.id,
     ...deliveryMethodMaybe,
@@ -160,6 +163,7 @@ const getOrderParams = (
     ...protectedDataMaybe,
     ...optionalPaymentParams,
     addOns,
+    ...tipMaybe,
   };
   return orderParams;
 };
@@ -272,9 +276,8 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
   const { saveAfterOnetimePayment: saveAfterOnetimePaymentRaw } = formValues;
 
   const deliveryDateRaw = formValues.deliveryDate?.date;
-  const deliveryDateStr = deliveryDateRaw instanceof Date
-    ? moment(deliveryDateRaw).format('YYYY-MM-DD')
-    : null;
+  const deliveryDateStr =
+    deliveryDateRaw instanceof Date ? moment(deliveryDateRaw).format('YYYY-MM-DD') : null;
 
   const deliveryDateTimeMaybe =
     deliveryDateStr && formValues.deliveryTimeFrom && formValues.deliveryTimeTo
@@ -343,7 +346,8 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
     optionalPaymentParams,
     config,
     transactionFieldsProtectedData,
-    message
+    message,
+    formValues.tip
   );
 
   // There are multiple XHR calls that needs to be made against Stripe API and Sharetribe Marketplace API on checkout with payments
@@ -432,6 +436,7 @@ const onStripeInitialized = (stripe, process, props) => {
  */
 export const CheckoutPageWithPayment = props => {
   const [submitting, setSubmitting] = useState(false);
+  const [tipSpeculating, setTipSpeculating] = useState(false);
   // Initialized stripe library is saved to state - if it's needed at some point here too.
   const [stripe, setStripe] = useState(null);
 
@@ -439,6 +444,7 @@ export const CheckoutPageWithPayment = props => {
     scrollingDisabled,
     speculateTransactionError,
     speculatedTransaction: speculatedTransactionMaybe,
+    speculateTransactionInProgress,
     isClockInSync,
     initiateOrderError,
     confirmPaymentError,
@@ -456,7 +462,20 @@ export const CheckoutPageWithPayment = props => {
     transactionFieldConfigs = [],
     showTransactionFields,
     config,
+    fetchSpeculatedTransaction,
   } = props;
+
+  useEffect(() => {
+    if (!speculateTransactionInProgress && tipSpeculating) {
+      setTipSpeculating(false);
+    }
+  }, [speculateTransactionInProgress]);
+
+  const handleTipApplied = tipInSubunits => {
+    setTipSpeculating(true);
+    const orderParams = getOrderParams(pageData, {}, {}, config, {}, null, tipInSubunits);
+    fetchSpeculatedTransactionIfNeeded(orderParams, pageData, fetchSpeculatedTransaction);
+  };
 
   // Since the listing data is already given from the ListingPage
   // and stored to handle refreshes, it might not have the possible
@@ -674,6 +693,9 @@ export const CheckoutPageWithPayment = props => {
                 isFuzzyLocation={config.maps.fuzzy.enabled}
                 transactionFieldConfigs={transactionFieldConfigs}
                 showTransactionFields={showTransactionFields}
+                payinTotal={tx.attributes.payinTotal ? tx.attributes.payinTotal.amount / 100 : 0}
+                onTipApplied={handleTipApplied}
+                tipSpeculating={tipSpeculating}
               />
             ) : null}
           </section>

@@ -27,6 +27,7 @@ import {
 
 import ShippingDetails from '../ShippingDetails/ShippingDetails';
 import DeliveryDateTimeSelector from './DeliveryDateTimeSelector';
+import TipForm from './TipForm';
 
 import css from './StripePaymentForm.module.css';
 
@@ -486,6 +487,9 @@ class StripePaymentForm extends Component {
       deliveryMethod,
       preparationHours,
       values,
+      payinTotal,
+      onTipApplied,
+      tipSpeculating,
     } = formRenderProps;
 
     this.finalFormAPI = formApi;
@@ -601,6 +605,16 @@ class StripePaymentForm extends Component {
           intl={intl}
           formId={formId}
         />
+
+        {deliveryMethod === 'shipping' && (
+          <TipForm
+            intl={intl}
+            payinTotal={payinTotal}
+            formApi={formApi}
+            onTipApplied={onTipApplied}
+            tipSpeculating={tipSpeculating}
+          />
+        )}
 
         {billingDetailsNeeded && !loadingData ? (
           <React.Fragment>

@@ -147,6 +147,7 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   const currency = priceAttribute?.currency || orderData.currency;
 
   const { priceVariantName, offer, addOns = [] } = orderData || {};
+
   const priceVariantConfig = priceVariants
     ? priceVariants.find(pv => pv.name === priceVariantName)
     : null;
@@ -250,15 +251,43 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
     }
   }
 
+  const tipLineItem = [];
+  if (orderData?.tip > 0) {
+    tipLineItem.push({
+      code: 'line-item/tip',
+      unitPrice: new Money(orderData.tip, currency),
+      quantity: 1,
+      includeFor: ['customer'],
+    });
+  }
+
   // Let's keep the base price (order) as first line item and provider and customer commissions as last.
   // Note: the order matters only if OrderBreakdown component doesn't recognize line-item.
   const lineItems = [
     order,
     ...extraLineItems,
     ...addOnsLineItems,
+    ...tipLineItem,
     ...getProviderCommissionMaybe(providerCommission, order, currency, addOnsLineItems),
     ...getCustomerCommissionMaybe(customerCommission, order, currency),
   ];
+
+  if (metadata?.deliveryInfoAdmin?.tax) {
+    const subtotalSubunits = [order, ...extraLineItems, ...addOnsLineItems, ...tipLineItem].reduce(
+      (sum, item) => {
+        if (item.units && item.seats) return sum + item.unitPrice.amount * item.units * item.seats;
+        return sum + item.unitPrice.amount * (item.quantity || 1);
+      },
+      0
+    );
+
+    lineItems.push({
+      code: 'line-item/tax',
+      unitPrice: new Money(subtotalSubunits, currency),
+      percentage: metadata.deliveryInfoAdmin.tax,
+      includeFor: ['customer'],
+    });
+  }
 
   return lineItems;
 };
