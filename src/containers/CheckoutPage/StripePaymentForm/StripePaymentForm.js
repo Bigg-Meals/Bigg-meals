@@ -606,15 +606,13 @@ class StripePaymentForm extends Component {
           formId={formId}
         />
 
-        {deliveryMethod === 'shipping' && (
-          <TipForm
-            intl={intl}
-            payinTotal={payinTotal}
-            formApi={formApi}
-            onTipApplied={onTipApplied}
-            tipSpeculating={tipSpeculating}
-          />
-        )}
+        <TipForm
+          intl={intl}
+          payinTotal={payinTotal}
+          formApi={formApi}
+          onTipApplied={onTipApplied}
+          tipSpeculating={tipSpeculating}
+        />
 
         {billingDetailsNeeded && !loadingData ? (
           <React.Fragment>

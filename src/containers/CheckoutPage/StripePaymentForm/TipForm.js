@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Heading, IconSpinner } from '../../../components';
 import css from './TipForm.module.css';
 
 const TIP_PERCENTAGES = [15, 20, 25];
 
-const TipForm = ({ payinTotal = 0, currency = 'USD', intl, formApi, onTipApplied, tipSpeculating }) => {
-  const [selectedOption, setSelectedOption] = useState(null); // 15 | 20 | 25 | 'custom'
+const TipForm = ({
+  payinTotal = 0,
+  currency = 'USD',
+  intl,
+  formApi,
+  onTipApplied,
+  tipSpeculating,
+}) => {
+  const [selectedOption, setSelectedOption] = useState(15); // 15 | 20 | 25 | 'custom'
   const [customInput, setCustomInput] = useState('0.00');
+  const defaultApplied = useRef(false);
 
-  const formatMoney = amount =>
-    intl.formatNumber(amount, { style: 'currency', currency });
+  const formatMoney = amount => intl.formatNumber(amount, { style: 'currency', currency });
 
   const tipAmountForPercent = pct => payinTotal * (pct / 100);
 
@@ -30,13 +37,25 @@ const TipForm = ({ payinTotal = 0, currency = 'USD', intl, formApi, onTipApplied
     if (onTipApplied) onTipApplied(0);
   };
 
+  useEffect(() => {
+    if (!defaultApplied.current && payinTotal > 0) {
+      defaultApplied.current = true;
+      const amount = tipAmountForPercent(15);
+      setCustomInput(amount.toFixed(2));
+      applyTip(amount);
+    }
+  }, [payinTotal]);
+
   const handlePresetClick = pct => {
     if (selectedOption === pct) {
       setSelectedOption(null);
+      setCustomInput('0.00');
       removeTip();
     } else {
+      const amount = tipAmountForPercent(pct);
       setSelectedOption(pct);
-      applyTip(tipAmountForPercent(pct));
+      setCustomInput(amount.toFixed(2));
+      applyTip(amount);
     }
   };
 
@@ -70,19 +89,20 @@ const TipForm = ({ payinTotal = 0, currency = 'USD', intl, formApi, onTipApplied
                 key={pct}
                 type="button"
                 disabled={tipSpeculating}
-                className={`${css.presetOption} ${selectedOption === pct ? css.presetSelected : ''}`}
+                className={`${css.presetOption} ${
+                  selectedOption === pct ? css.presetSelected : ''
+                }`}
                 onClick={() => handlePresetClick(pct)}
               >
                 <span className={css.presetPercent}>{pct}%</span>
-                {selectedOption !== pct && (
-                  <span className={css.presetAmount}>{formatMoney(tipAmountForPercent(pct))}</span>
-                )}
               </button>
             ))}
             <button
               type="button"
               disabled={tipSpeculating}
-              className={`${css.presetOption} ${css.customOption} ${isCustom ? css.presetSelected : ''}`}
+              className={`${css.presetOption} ${css.customOption} ${
+                isCustom ? css.presetSelected : ''
+              }`}
               onClick={() => {
                 if (isCustom) {
                   setSelectedOption(null);
@@ -108,10 +128,20 @@ const TipForm = ({ payinTotal = 0, currency = 'USD', intl, formApi, onTipApplied
                 disabled={!isCustom}
                 onChange={e => setCustomInput(e.target.value)}
               />
-              <button type="button" className={css.stepper} onClick={handleDecrement} disabled={!isCustom}>
+              <button
+                type="button"
+                className={css.stepper}
+                onClick={handleDecrement}
+                disabled={!isCustom}
+              >
                 &minus;
               </button>
-              <button type="button" className={css.stepper} onClick={handleIncrement} disabled={!isCustom}>
+              <button
+                type="button"
+                className={css.stepper}
+                onClick={handleIncrement}
+                disabled={!isCustom}
+              >
                 +
               </button>
             </div>
@@ -125,9 +155,7 @@ const TipForm = ({ payinTotal = 0, currency = 'USD', intl, formApi, onTipApplied
             </button>
           </div>
 
-          {selectedOption !== null && (
-            <p className={css.thankYou}>Thank you, we appreciate it.</p>
-          )}
+          {selectedOption !== null && <p className={css.thankYou}>Thank you, we appreciate it.</p>}
         </div>
       </div>
     </div>

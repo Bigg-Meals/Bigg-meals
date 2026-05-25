@@ -175,7 +175,7 @@ const EnhancedCheckoutPage = props => {
       )
     : 'Checkout page is loading data';
 
-  if (!speculateTransactionInProgress) {
+  if (!speculateTransactionInProgress && props.speculatedTransaction?.id?.uuid) {
     hasFormBeenShown.current = true;
   }
 
@@ -195,7 +195,9 @@ const EnhancedCheckoutPage = props => {
       transactionFieldConfigs={transactionFieldConfigs}
       {...props}
     />
-  ) : processName && !isInquiryProcess && (!speculateTransactionInProgress || hasFormBeenShown.current) ? (
+  ) : processName &&
+    !isInquiryProcess &&
+    (!speculateTransactionInProgress || hasFormBeenShown.current) ? (
     <CheckoutPageWithPayment
       config={config}
       routeConfiguration={routeConfiguration}
