@@ -281,3 +281,31 @@
   margin-top: 24px;
   margin-bottom: 56px;
 }
+
+/* Store schedule display */
+.scheduleList {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0 0;
+}
+
+.scheduleRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--colorGrey100);
+
+  @media (--viewportMedium) {
+    padding: 8px 0;
+  }
+}
+
+.scheduleRow:last-child {
+  border-bottom: none;
+}
+
+.scheduleDay {
+  font-weight: var(--fontWeightSemiBold);
+  min-width: 120px;
+}
+

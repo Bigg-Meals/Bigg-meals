@@ -100,6 +100,15 @@ const post = (path, body, options = {}) => {
   return request(path, requestOptions);
 };
 
+const get = (path, options = {}) => {
+  const requestOptions = {
+    ...options,
+    method: methods.GET,
+  };
+
+  return request(path, requestOptions);
+};
+
 // Fetch transaction line items from the local API endpoint.
 //
 // See `server/api/transaction-line-items.js` to see what data should

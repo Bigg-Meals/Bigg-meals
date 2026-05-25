@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Form as FinalForm, FormSpy } from 'react-final-form';
+import arrayMutators from 'final-form-arrays';
 
 import { FormattedMessage, useIntl } from '../../../util/reactIntl';
 import { propTypes } from '../../../util/types';
 import { numberAtLeast, required } from '../../../util/validators';
+import { formatMoney } from '../../../util/currency';
+import { types as sdkTypes } from '../../../util/sdkLoader';
 import { PURCHASE_PROCESS_NAME } from '../../../transactions/transaction';
 
 import {
   Form,
+  FieldCheckboxGroup,
   FieldSelect,
   FieldTextInput,
   InlineTextButton,
@@ -15,6 +19,8 @@ import {
   H3,
   H6,
 } from '../../../components';
+
+const { Money } = sdkTypes;
 
 import EstimatedCustomerBreakdownMaybe from '../EstimatedCustomerBreakdownMaybe';
 
@@ -35,6 +41,7 @@ const handleFetchLineItems = ({
   isOwnListing,
   fetchLineItemsInProgress,
   onFetchTransactionLineItems,
+  addOns,
 }) => {
   const stockReservationQuantity = Number.parseInt(quantity, 10);
   const deliveryMethodMaybe = deliveryMethod ? { deliveryMethod } : {};
@@ -46,11 +53,32 @@ const handleFetchLineItems = ({
     !fetchLineItemsInProgress
   ) {
     onFetchTransactionLineItems({
-      orderData: { stockReservationQuantity, ...deliveryMethodMaybe },
+      orderData: { stockReservationQuantity, ...deliveryMethodMaybe, addOns },
       listingId,
       isOwnListing,
     });
   }
+};
+
+const AddOnsMaybe = ({ addOns, hasStock, formId, intl, price }) => {
+  if (!hasStock || !addOns || addOns.length === 0) return null;
+  const currency = price?.currency;
+  const options = addOns
+    .filter(a => a?.key && a?.name && a?.priceInSubunits != null && currency)
+    .map(addon => ({
+      key: addon.key,
+      label: `${addon.name}: ${formatMoney(intl, new Money(addon.priceInSubunits, currency))}`,
+    }));
+  if (options.length === 0) return null;
+  return (
+    <FieldCheckboxGroup
+      id={`${formId}.addOns`}
+      name="addOns"
+      className={css.addOnsField}
+      label={intl.formatMessage({ id: 'ProductOrderForm.addOnsLabel' })}
+      options={options}
+    />
+  );
 };
 
 const DeliveryMethodMaybe = props => {
@@ -111,6 +139,7 @@ const DeliveryMethodMaybe = props => {
 
 const renderForm = formRenderProps => {
   const [mounted, setMounted] = useState(false);
+  const prevLineItemValues = useRef({ quantity: undefined, deliveryMethod: undefined });
   const {
     // FormRenderProps from final-form
     handleSubmit,
@@ -134,6 +163,9 @@ const renderForm = formRenderProps => {
     payoutDetailsWarning,
     marketplaceName,
     values,
+    deliveryInfoAdmin,
+    invalid,
+    addOns,
   } = formRenderProps;
 
   // Note: don't add custom logic before useEffect
@@ -157,8 +189,15 @@ const renderForm = formRenderProps => {
 
   // If form values change, update line-items for the order breakdown
   const handleOnChange = formValues => {
-    const { quantity, deliveryMethod } = formValues.values;
-    if (mounted) {
+    const { quantity, deliveryMethod, addOns = [] } = formValues.values;
+    const prev = prevLineItemValues.current;
+    if (
+      mounted &&
+      (quantity !== prev.quantity ||
+        deliveryMethod !== prev.deliveryMethod ||
+        addOns !== prev.addOns)
+    ) {
+      prevLineItemValues.current = { quantity, deliveryMethod, addOns };
       handleFetchLineItems({
         quantity,
         deliveryMethod,
@@ -166,6 +205,7 @@ const renderForm = formRenderProps => {
         isOwnListing,
         fetchLineItemsInProgress,
         onFetchTransactionLineItems,
+        addOns,
       });
     }
   };
@@ -184,6 +224,11 @@ const renderForm = formRenderProps => {
       // Blur event will show validator message
       formApi.blur('deliveryMethod');
       formApi.focus('deliveryMethod');
+    } else if (deliveryMethod === 'shipping' && !values.zipcode) {
+      e.preventDefault();
+      // Blur event will show validator message
+      formApi.blur('zipcode');
+      formApi.focus('zipcode');
     } else {
       handleSubmit(e);
     }
@@ -217,7 +262,7 @@ const renderForm = formRenderProps => {
   const quantities = hasStock ? [...Array(selectableStock).keys()].map(i => i + 1) : [];
 
   const submitInProgress = fetchLineItemsInProgress;
-  const submitDisabled = !hasStock;
+  const submitDisabled = !hasStock || invalid;
 
   return (
     <Form onSubmit={handleFormSubmit}>
@@ -250,6 +295,8 @@ const renderForm = formRenderProps => {
         </FieldSelect>
       )}
 
+      <AddOnsMaybe addOns={addOns} hasStock={hasStock} formId={formId} intl={intl} price={price} />
+
       <DeliveryMethodMaybe
         displayDeliveryMethod={displayDeliveryMethod}
         hasMultipleDeliveryMethods={hasMultipleDeliveryMethods}
@@ -258,6 +305,27 @@ const renderForm = formRenderProps => {
         formId={formId}
         intl={intl}
       />
+
+      {values?.deliveryMethod === 'shipping' ? (
+        <FieldTextInput
+          id={`${formId}.zipcode`}
+          className={css.zipcodeField}
+          name="zipcode"
+          type="text"
+          label={intl.formatMessage({ id: 'ProductOrderForm.zipcodeLabel' })}
+          placeholder={intl.formatMessage({ id: 'ProductOrderForm.zipcodePlaceholder' })}
+          validate={value => {
+            if (!value || value.trim() === '') {
+              return intl.formatMessage({ id: 'ProductOrderForm.zipcodeRequired' });
+            }
+            const zipcodes = deliveryInfoAdmin?.zipcodes || [];
+            if (!zipcodes.includes(value.trim())) {
+              return intl.formatMessage({ id: 'ProductOrderForm.zipcodeNotAvailable' });
+            }
+            return undefined;
+          }}
+        />
+      ) : null}
 
       {showBreakdown ? (
         <div className={css.breakdownWrapper}>
@@ -363,6 +431,7 @@ const ProductOrderForm = props => {
   return (
     <FinalForm
       initialValues={initialValues}
+      mutators={{ ...arrayMutators }}
       hasMultipleDeliveryMethods={hasMultipleDeliveryMethods}
       displayDeliveryMethod={displayDeliveryMethod}
       {...props}

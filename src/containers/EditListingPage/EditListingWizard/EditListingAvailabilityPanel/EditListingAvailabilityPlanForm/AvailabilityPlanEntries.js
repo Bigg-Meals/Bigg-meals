@@ -361,13 +361,14 @@ const SeatsWithTimeRangeHidden = props => {
  * @param {Boolean} props.useFullDays - enforce full days (used with 'day' and 'night' unit types).
  * @param {Boolean} props.useMultipleSeats - true if availabilityType is 'multipleSeats'.
  * @param {String} props.unitType - 'hour', 'day', 'night'.
+ * @param {Boolean} [props.allowMultipleSlots=true] - whether to show the '+ Add another' button.
  * @param {Object} props.values - form values for the availability plan entries.
  * @param {*} props.formApi - React Final Form api ('form').
  * @param {ReactIntl} props.intl - React Intl instance.
  * @returns {JSX.Element} The field elements for the form.
  */
 const AvailabilityPlanEntries = props => {
-  const { dayOfWeek, useFullDays, useMultipleSeats, unitType, values, formApi, intl } = props;
+  const { dayOfWeek, useFullDays, useMultipleSeats, unitType, allowMultipleSlots = true, values, formApi, intl } = props;
   const entries = values[dayOfWeek];
   const hasEntries = entries && entries[0];
   const getEntryStartTimes = getEntryBoundaries(entries, true);
@@ -472,7 +473,7 @@ const AvailabilityPlanEntries = props => {
                 );
               })}
 
-              {!useFullDays && fields.length > 0 ? (
+              {!useFullDays && allowMultipleSlots && fields.length > 0 ? (
                 <InlineTextButton
                   type="button"
                   className={css.buttonAddNew}

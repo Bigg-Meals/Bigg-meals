@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
+import moment from 'moment';
 
 import { FormattedMessage, injectIntl, intlShape } from '../../../util/reactIntl';
 import { propTypes } from '../../../util/types';
@@ -7,8 +8,12 @@ import { userDisplayNameAsString } from '../../../util/data';
 import { isMobileSafari } from '../../../util/userAgent';
 import { createSlug } from '../../../util/urlHelpers';
 import { displayPrice } from '../../../util/configHelpers';
+import { formatMoney } from '../../../util/currency';
+import { types as sdkTypes } from '../../../util/sdkLoader';
 
-import { AvatarLarge, NamedLink, UserDisplayName } from '../../../components';
+const { Money } = sdkTypes;
+
+import { AvatarLarge, NamedLink, UserDisplayName, Heading } from '../../../components';
 
 import { stateDataShape } from '../TransactionPage.stateData';
 import SendMessageForm from '../SendMessageForm/SendMessageForm';
@@ -24,6 +29,62 @@ import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
 
 import css from './TransactionPanel.module.css';
+
+const DeliveryDateTimeMaybe = ({ protectedData, intl }) => {
+  const { deliveryDate, deliveryTimeFrom, deliveryTimeTo, deliveryMethod } = protectedData || {};
+  if (!deliveryDate || !deliveryTimeFrom || !deliveryTimeTo) return null;
+
+  const isPickup = deliveryMethod === 'pickup';
+  const headingId = isPickup
+    ? 'TransactionPanel.pickupDateTimeHeading'
+    : 'TransactionPanel.deliveryDateTimeHeading';
+
+  const formattedDate = moment(deliveryDate, 'YYYY-MM-DD').format('ddd, MMM D, YYYY');
+  const formattedFrom = moment(deliveryTimeFrom, 'HH:mm').format('h:mm A');
+  const formattedTo = moment(deliveryTimeTo, 'HH:mm').format('h:mm A');
+
+  return (
+    <div className={css.deliveryInfoContainer}>
+      <Heading as="h3" rootClassName={css.sectionHeading}>
+        <FormattedMessage id={headingId} />
+      </Heading>
+      <p className={css.deliveryInfoDetails}>
+        {formattedDate} &middot; {formattedFrom} – {formattedTo}
+      </p>
+    </div>
+  );
+};
+
+const AddOnsMaybe = ({ protectedData, listing, intl }) => {
+  const selectedKeys = protectedData?.addOns;
+  if (!selectedKeys || selectedKeys.length === 0) return null;
+
+  const publicAddOns = listing?.attributes?.publicData?.addOns || [];
+  const currency = listing?.attributes?.price?.currency;
+  const selectedAddOns = selectedKeys
+    .map(key => publicAddOns.find(a => a.key === key))
+    .filter(Boolean);
+
+  if (selectedAddOns.length === 0) return null;
+
+  return (
+    <div className={css.deliveryInfoContainer}>
+      <Heading as="h3" rootClassName={css.sectionHeading}>
+        <FormattedMessage id="TransactionPanel.addOnsHeading" />
+      </Heading>
+      <ul className={css.addOnsList}>
+        {selectedAddOns.map(addon => (
+          <li key={addon.key} className={css.addOnsItem}>
+            <span>{addon.name}</span>
+            {currency ? (
+              <span>{formatMoney(intl, new Money(addon.priceInSubunits, currency))}</span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 // Helper function to get display names for different roles
 const displayNames = (currentUser, provider, customer, intl) => {
@@ -285,6 +346,9 @@ export class TransactionPanelComponent extends Component {
             {requestQuote}
             {offer}
             {transactionFieldsComponent}
+
+            <DeliveryDateTimeMaybe protectedData={protectedData} intl={intl} />
+            <AddOnsMaybe protectedData={protectedData} listing={listing} intl={intl} />
 
             {!isInquiryProcess ? (
               <div className={css.orderDetails}>

@@ -84,6 +84,10 @@ module.exports = (req, res) => {
           ...params,
           lineItems,
           ...metadataMaybe,
+          protectedData: {
+            ...params.protectedData,
+            ...(params?.addOns?.length > 0 && { addOns: params.addOns }),
+          },
         },
       };
 

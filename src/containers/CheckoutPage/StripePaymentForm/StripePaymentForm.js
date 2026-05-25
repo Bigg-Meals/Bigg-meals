@@ -26,6 +26,8 @@ import {
 } from '../../../components';
 
 import ShippingDetails from '../ShippingDetails/ShippingDetails';
+import DeliveryDateTimeSelector from './DeliveryDateTimeSelector';
+import TipForm from './TipForm';
 
 import css from './StripePaymentForm.module.css';
 
@@ -481,7 +483,13 @@ class StripePaymentForm extends Component {
       isFuzzyLocation,
       transactionFieldConfigs = [],
       showTransactionFields,
+      storeTimings,
+      deliveryMethod,
+      preparationHours,
       values,
+      payinTotal,
+      onTipApplied,
+      tipSpeculating,
     } = formRenderProps;
 
     this.finalFormAPI = formApi;
@@ -586,6 +594,24 @@ class StripePaymentForm extends Component {
           formApi={formApi}
           locale={locale}
           intl={intl}
+        />
+
+        <DeliveryDateTimeSelector
+          storeTimings={storeTimings}
+          deliveryMethod={deliveryMethod}
+          preparationHours={preparationHours}
+          values={values}
+          formApi={formApi}
+          intl={intl}
+          formId={formId}
+        />
+
+        <TipForm
+          intl={intl}
+          payinTotal={payinTotal}
+          formApi={formApi}
+          onTipApplied={onTipApplied}
+          tipSpeculating={tipSpeculating}
         />
 
         {billingDetailsNeeded && !loadingData ? (

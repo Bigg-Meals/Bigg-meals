@@ -22,6 +22,8 @@ const createUserWithIdp = require('./api/auth/createUserWithIdp');
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
 const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/google');
 
+const auth = require('./middleware/auth');
+
 const router = express.Router();
 
 // ================ API router middleware: ================ //

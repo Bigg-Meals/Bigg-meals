@@ -113,7 +113,12 @@ export const EditListingDeliveryForm = props => (
       const submitReady = (updated && pristine) || ready;
       const submitInProgress = updateInProgress;
       const submitDisabled =
-        invalid || disabled || submitInProgress || (!shippingEnabled && !pickupEnabled);
+        invalid ||
+        disabled ||
+        submitInProgress 
+        // ||
+        // !shippingEnabled &&
+        // !pickupEnabled;
 
       const shippingLabel = intl.formatMessage({ id: 'EditListingDeliveryForm.shippingLabel' });
       const pickupLabel = intl.formatMessage({ id: 'EditListingDeliveryForm.pickupLabel' });
@@ -132,13 +137,13 @@ export const EditListingDeliveryForm = props => (
 
       return (
         <Form className={classes} onSubmit={handleSubmit}>
-          <FieldCheckbox
+          {/* <FieldCheckbox
             id={formId ? `${formId}.pickup` : 'pickup'}
             className={classNames(css.deliveryCheckbox, { [css.hidden]: !displayMultipleDelivery })}
             name="deliveryOptions"
             label={pickupLabel}
             value="pickup"
-          />
+          /> */}
           <div className={pickupClasses}>
             {updateListingError ? (
               <p className={css.error}>
@@ -203,15 +208,15 @@ export const EditListingDeliveryForm = props => (
             />
           </div>
 
-          <FieldCheckbox
+          {/* <FieldCheckbox
             id={formId ? `${formId}.shipping` : 'shipping'}
             className={classNames(css.deliveryCheckbox, { [css.hidden]: !displayMultipleDelivery })}
             name="deliveryOptions"
             label={shippingLabel}
             value="shipping"
-          />
+          /> */}
 
-          <div className={shippingClasses}>
+          {/* <div className={shippingClasses}>
             <FieldCurrencyInput
               id={
                 formId
@@ -283,7 +288,7 @@ export const EditListingDeliveryForm = props => (
                 key={shippingEnabled ? 'additionalItemsValidation' : 'noAdditionalItemsValidation'}
               />
             ) : null}
-          </div>
+          </div> */}
 
           <Button
             className={css.submitButton}

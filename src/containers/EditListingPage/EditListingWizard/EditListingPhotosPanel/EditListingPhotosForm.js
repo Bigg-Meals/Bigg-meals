@@ -20,6 +20,7 @@ import ListingImage from './ListingImage';
 import css from './EditListingPhotosForm.module.css';
 
 const ACCEPT_IMAGES = 'image/*';
+const MAX_IMAGES = 5;
 
 const ImageUploadError = props => {
   return props.uploadOverLimit ? (
@@ -139,9 +140,9 @@ export const EditListingPhotosForm = props => {
   const [state, setState] = useState({ imageUploadRequested: false });
   const [submittedImages, setSubmittedImages] = useState([]);
 
-  const onImageUploadHandler = file => {
+  const onImageUploadHandler = (file, currentImageCount) => {
     const { listingImageConfig, onImageUpload } = props;
-    if (file) {
+    if (file && currentImageCount < MAX_IMAGES) {
       setState({ imageUploadRequested: true });
 
       onImageUpload({ id: `${file.name}_${Date.now()}`, file }, listingImageConfig)
@@ -244,27 +245,29 @@ export const EditListingPhotosForm = props => {
                 }
               </FieldArray>
 
-              <FieldAddImage
-                id="addImage"
-                name="addImage"
-                accept={ACCEPT_IMAGES}
-                label={
-                  <span className={css.chooseImageText}>
-                    <span className={css.chooseImage}>
-                      <FormattedMessage id="EditListingPhotosForm.chooseImage" />
+              {images.length < MAX_IMAGES ? (
+                <FieldAddImage
+                  id="addImage"
+                  name="addImage"
+                  accept={ACCEPT_IMAGES}
+                  label={
+                    <span className={css.chooseImageText}>
+                      <span className={css.chooseImage}>
+                        <FormattedMessage id="EditListingPhotosForm.chooseImage" />
+                      </span>
+                      <span className={css.imageTypes}>
+                        <FormattedMessage id="EditListingPhotosForm.imageTypes" />
+                      </span>
                     </span>
-                    <span className={css.imageTypes}>
-                      <FormattedMessage id="EditListingPhotosForm.imageTypes" />
-                    </span>
-                  </span>
-                }
-                type="file"
-                disabled={state.imageUploadRequested}
-                formApi={form}
-                onImageUploadHandler={onImageUploadHandler}
-                aspectWidth={aspectWidth}
-                aspectHeight={aspectHeight}
-              />
+                  }
+                  type="file"
+                  disabled={state.imageUploadRequested}
+                  formApi={form}
+                  onImageUploadHandler={file => onImageUploadHandler(file, images.length)}
+                  aspectWidth={aspectWidth}
+                  aspectHeight={aspectHeight}
+                />
+              ) : null}
             </div>
 
             {imagesError ? <div className={css.arrayError}>{imagesError}</div> : null}

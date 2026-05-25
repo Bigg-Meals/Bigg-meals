@@ -157,3 +157,37 @@
 .missingStripeKey {
   color: var(--colorFail);
 }
+
+.deliveryDateTime {
+  margin-bottom: 40px;
+}
+
+.datePickerPopup {
+  position: absolute;
+  width: 100%;
+  z-index: 9999;
+}
+
+.deliveryTimeRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.deliveryTimeField {
+  flex: 1;
+}
+
+.deliveryTimeSeparator {
+  composes: p from global;
+  /* Push separator down past the label so it sits level with the select inputs */
+  padding-top: 26px;
+  color: var(--colorGrey500);
+}
+
+.noSlotsMessage {
+  composes: p from global;
+  color: var(--colorGrey500);
+  margin-top: 12px;
+}

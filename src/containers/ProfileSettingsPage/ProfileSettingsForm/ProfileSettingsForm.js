@@ -20,13 +20,25 @@ import {
   IconSpinner,
   FieldTextInput,
   H4,
+  InlineTextButton,
   CustomExtendedDataField,
 } from '../../../components';
+
+import StoreScheduleModal from './StoreScheduleModal';
 
 import css from './ProfileSettingsForm.module.css';
 
 const ACCEPT_IMAGES = 'image/*';
 const UPLOAD_CHANGE_DELAY = 2000; // Show spinner so that browser has time to load img srcset
+
+const WEEKDAYS_DISPLAY = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+const formatHour = (hour24, intl) => {
+  const hours = Number.parseInt(hour24.split(':')[0], 10);
+  const d = new Date(`${new Date().getUTCFullYear()}-01-01T00:00:00.000Z`);
+  d.setUTCHours(hours);
+  return intl.formatTime(d, { hour: 'numeric', minute: 'numeric', timeZone: 'Etc/UTC' });
+};
 
 const DisplayNameMaybe = props => {
   const { userTypeConfig, intl } = props;
@@ -103,8 +115,18 @@ class ProfileSettingsFormComponent extends Component {
     super(props);
 
     this.uploadDelayTimeoutId = null;
-    this.state = { uploadDelay: false };
+    this.state = { uploadDelay: false, scheduleModalOpen: false };
     this.submittedValues = {};
+    this.openScheduleModal = this.openScheduleModal.bind(this);
+    this.closeScheduleModal = this.closeScheduleModal.bind(this);
+  }
+
+  openScheduleModal() {
+    this.setState({ scheduleModalOpen: true });
+  }
+
+  closeScheduleModal() {
+    this.setState({ scheduleModalOpen: false });
   }
 
   componentDidUpdate(prevProps) {
@@ -123,7 +145,11 @@ class ProfileSettingsFormComponent extends Component {
   }
 
   render() {
+    const { onManageDisableScrolling, onSaveSchedule, storeTimings, userTypeConfig } = this.props;
+    const isNotCustomer = userTypeConfig?.userType !== 'customer';
+
     return (
+      <>
       <FinalForm
         {...this.props}
         mutators={{ ...arrayMutators }}
@@ -389,6 +415,36 @@ class ProfileSettingsFormComponent extends Component {
                   <FormattedMessage id="ProfileSettingsForm.bioInfo" values={{ marketplaceName }} />
                 </p>
               </div>
+
+              {/* Store Schedule — providers only */}
+              {isNotCustomer ? (
+              <div className={css.sectionContainer}>
+                <H4 as="h2" className={css.sectionTitle}>
+                  <FormattedMessage id="ProfileSettingsForm.scheduleSection" />
+                </H4>
+                <InlineTextButton type="button" onClick={this.openScheduleModal}>
+                  <FormattedMessage id="ProfileSettingsForm.editScheduleLink" />
+                </InlineTextButton>
+                {storeTimings && Object.keys(storeTimings).length > 0 ? (
+                  <ul className={css.scheduleList}>
+                    {WEEKDAYS_DISPLAY.filter(d => storeTimings[d]).map(d => {
+                      const { startTime, endTime } = storeTimings[d];
+                      const dayLabel = intl.formatMessage({
+                        id: `EditListingAvailabilityPlanForm.dayOfWeek.${d}`,
+                      });
+                      return (
+                        <li key={d} className={css.scheduleRow}>
+                          <span className={css.scheduleDay}>{dayLabel}</span>
+                          <span>
+                            {formatHour(startTime, intl)} – {formatHour(endTime, intl)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </div>
+              ) : null}
               <div className={classNames(css.sectionContainer, css.lastSection)}>
                 {userFieldProps.map(({ key, ...fieldProps }) => (
                   <CustomExtendedDataField key={key} {...fieldProps} formId={formId} />
@@ -408,6 +464,16 @@ class ProfileSettingsFormComponent extends Component {
           );
         }}
       />
+      {isNotCustomer ? (
+      <StoreScheduleModal
+        isOpen={this.state.scheduleModalOpen}
+        onClose={this.closeScheduleModal}
+        onManageDisableScrolling={onManageDisableScrolling}
+        onSave={onSaveSchedule}
+        storeTimings={storeTimings}
+      />
+      ) : null}
+      </>
     );
   }
 }

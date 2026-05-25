@@ -45,6 +45,7 @@ import {
   removeListingImage,
   savePayoutDetails,
 } from './EditListingPage.duck';
+import { updateProfile } from '../ProfileSettingsPage/ProfileSettingsPage.duck';
 import EditListingWizard from './EditListingWizard/EditListingWizard';
 import css from './EditListingPage.module.css';
 
@@ -158,6 +159,7 @@ export const EditListingPageComponent = props => {
     stripeAccount,
     updateStripeAccountError,
     authScopes,
+    onUpdateProfile,
   } = props;
 
   const { id, type, returnURLType } = params;
@@ -297,6 +299,7 @@ export const EditListingPageComponent = props => {
           onImageUpload={onImageUpload}
           onRemoveImage={onRemoveListingImage}
           currentUser={currentUser}
+          onUpdateProfile={onUpdateProfile}
           onManageDisableScrolling={onManageDisableScrolling}
           stripeOnboardingReturnURL={params.returnURLType}
           updatedTab={page.updatedTab}
@@ -381,6 +384,7 @@ const mapDispatchToProps = dispatch => ({
     dispatch(requestImageUpload(data, listingImageConfig)),
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
+  onUpdateProfile: data => dispatch(updateProfile(data)),
   onPayoutDetailsChange: () => dispatch(stripeAccountClearError()),
   onPayoutDetailsSubmit: (values, isUpdateCall) =>
     dispatch(savePayoutDetails(values, isUpdateCall)),

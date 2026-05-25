@@ -21,8 +21,8 @@ const getItemQuantityAndLineItems = (orderData, publicData, currency) => {
   const deliveryMethod = orderData && orderData.deliveryMethod;
   const isShipping = deliveryMethod === 'shipping';
   const isPickup = deliveryMethod === 'pickup';
-  const { shippingPriceInSubunitsOneItem, shippingPriceInSubunitsAdditionalItems } =
-    publicData || {};
+  const { shippingPriceInSubunitsOneItem = 0, shippingPriceInSubunitsAdditionalItems = 0 } =
+    publicData?.deliveryInfoAdmin || {};
 
   // Calculate shipping fee if applicable
   const shippingFee = isShipping
@@ -42,7 +42,7 @@ const getItemQuantityAndLineItems = (orderData, publicData, currency) => {
           code: 'line-item/shipping-fee',
           unitPrice: shippingFee,
           quantity: 1,
-          includeFor: ['customer', 'provider'],
+          includeFor: ['customer'],
         },
       ]
     : [];
@@ -136,7 +136,7 @@ const getDateRangeQuantityAndLineItems = (orderData, code) => {
  * @returns {Array} lineItems
  */
 exports.transactionLineItems = (listing, orderData, providerCommission, customerCommission) => {
-  const publicData = listing.attributes.publicData;
+  const { publicData, metadata = {} } = listing.attributes || {};
   // Note: the unitType needs to be one of the following:
   // day, night, hour, fixed, or item (these are related to payment processes)
   const { unitType, priceVariants, priceVariationsEnabled } = publicData;
@@ -146,7 +146,8 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   const priceAttribute = listing.attributes.price;
   const currency = priceAttribute?.currency || orderData.currency;
 
-  const { priceVariantName, offer } = orderData || {};
+  const { priceVariantName, offer, addOns = [] } = orderData || {};
+
   const priceVariantConfig = priceVariants
     ? priceVariants.find(pv => pv.name === priceVariantName)
     : null;
@@ -177,7 +178,7 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   // E.g. by default, "shipping-fee" is tied to 'item' aka buying products.
   const quantityAndExtraLineItems =
     unitType === 'item'
-      ? getItemQuantityAndLineItems(orderData, publicData, currency)
+      ? getItemQuantityAndLineItems(orderData, { ...publicData, ...metadata }, currency)
       : unitType === 'fixed'
       ? getFixedQuantityAndLineItems(orderData)
       : unitType === 'hour'
@@ -227,14 +228,66 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
     includeFor: ['customer', 'provider'],
   };
 
+  const addOnsLineItems = [];
+  if (addOns.length > 0) {
+    const publicDataAddOns = publicData?.addOns || [];
+    const selectedAddOns = addOns
+      .map(key => publicDataAddOns.find(a => a.key === key))
+      .filter(Boolean);
+
+    if (selectedAddOns.length > 0) {
+      const totalAddOnSubunits = selectedAddOns.reduce(
+        (sum, addon) => sum + addon.priceInSubunits,
+        0
+      );
+      const addOnNames = selectedAddOns.map(a => a.name).join(', ');
+      const addOnLineItem = {
+        code: 'line-item/add-ons',
+        unitPrice: new Money(totalAddOnSubunits, currency),
+        quantity: 1,
+        includeFor: ['customer', 'provider'],
+      };
+      addOnsLineItems.push(addOnLineItem);
+    }
+  }
+
+  const tipLineItem = [];
+  if (orderData?.tip > 0) {
+    tipLineItem.push({
+      code: 'line-item/tip',
+      unitPrice: new Money(orderData.tip, currency),
+      quantity: 1,
+      includeFor: ['customer'],
+    });
+  }
+
   // Let's keep the base price (order) as first line item and provider and customer commissions as last.
   // Note: the order matters only if OrderBreakdown component doesn't recognize line-item.
   const lineItems = [
     order,
     ...extraLineItems,
-    ...getProviderCommissionMaybe(providerCommission, order, currency),
+    ...addOnsLineItems,
+    ...tipLineItem,
+    ...getProviderCommissionMaybe(providerCommission, order, currency, addOnsLineItems),
     ...getCustomerCommissionMaybe(customerCommission, order, currency),
   ];
+
+  if (metadata?.deliveryInfoAdmin?.tax) {
+    const subtotalSubunits = [order, ...extraLineItems, ...addOnsLineItems, ...tipLineItem].reduce(
+      (sum, item) => {
+        if (item.units && item.seats) return sum + item.unitPrice.amount * item.units * item.seats;
+        return sum + item.unitPrice.amount * (item.quantity || 1);
+      },
+      0
+    );
+
+    lineItems.push({
+      code: 'line-item/tax',
+      unitPrice: new Money(subtotalSubunits, currency),
+      percentage: metadata.deliveryInfoAdmin.tax,
+      includeFor: ['customer'],
+    });
+  }
 
   return lineItems;
 };
